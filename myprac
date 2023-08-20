@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include <stdarg.h>
+
+int _printf(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    int count = 0;  // To keep track of the characters printed
+
+    while (*format != '\0') {
+        if (*format == '%') {
+            format++;  // Move past '%'
+
+            // Handle the next character after '%'
+            switch (*format) {
+                case 'c':
+                    putchar(va_arg(args, int));
+                    count++;
+                    break;
+                case 's':
+                    for (const char *str = va_arg(args, const char *); *str != '\0'; str++) {
+                        putchar(*str);
+                        count++;
+                    }
+                    break;
+                case 'd':
+                case 'i': {
+                    int num = va_arg(args, int);
+                    if (num < 0) {
+                        putchar('-');
+                        count++;
+                        num = -num;
+                    }
+                    int divisor = 1;
+                    while (divisor * 10 <= num) {
+                        divisor *= 10;
+                    }
+                    while (divisor > 0) {
+                        int digit = num / divisor;
+                        putchar('0' + digit);
+                        count++;
+                        num %= divisor;
+                        divisor /= 10;
+                    }
+                    break;
+                }
+                case 'u':
+                    printf("%u", va_arg(args, unsigned int));
+                    break;
+                case 'o':
+                    printf("%o", va_arg(args, unsigned int));
+                    break;
+                case 'x':
+                    printf("%x", va_arg(args, unsigned int));
+                    break;
+                case 'X':
+                    printf("%X", va_arg(args, unsigned int));
+                    break;
+                case '%':
+                    putchar('%');
+                    count++;
+                    break;
+                default:
+                    // Print unknown format specifier as is
+                    putchar('%');
+                    putchar(*format);
+                    count += 2;
+                    break;
+            }
+        } else {
+            putchar(*format);
+            count++;
+        }
+
+        format++;  // Move to the next character
+    }
+
+    va_end(args);
+    return count;
+}
+
+int main() {
+    unsigned int u = 12345;
+    int n = -42;
+    _printf("Unsigned: %u, Negative: %d, Octal: %o, Lowercase Hex: %x, Uppercase Hex: %X\n", u, n, n, n, n);
+    return 0;
+}
+
